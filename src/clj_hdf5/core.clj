@@ -9,9 +9,17 @@
 (defrecord hdf-node
   [accessor path])
 
+(defn make-hdf-node
+  [accessor path]
+  (new hdf-node accessor path))
+
 ; An attribute is defined by its node and its name.
 (defrecord hdf-attribute
   [accessor path attrname])
+
+(defn make-hdf-attribute
+  [accessor path attrname]
+  (new hdf-attribute accessor path attrname))
 
 ; Private utility definitions 
 (defn- absolute-path?
@@ -281,15 +289,27 @@
 (defmulti create-dataset
   (fn [parent name data] (type data)))
 
+(defmethod create-dataset hdf-node
+  [parent name data]
+  (assert (group? parent))
+  (assert (string? name))
+  (.copy (:accessor data) (:path data)
+         (:accessor parent) (if (root? parent) "/" (str (:path parent) "/")))
+  (new hdf-node (:accessor parent) (path-concat (:path parent) name)))
+
 (defmulti ^{:private true} create-array-dataset
   (fn [parent name data] (type (first data))))
 
 (defmethod create-dataset clojure.lang.Sequential
   [parent name data]
+  (assert (group? parent))
+  (assert (string? name))
   (create-array-dataset parent name data))
 
 (defmethod create-dataset clojure.lang.IPersistentMap
   [parent name data]
+  (assert (group? parent))
+  (assert (string? name))
   (assert (and (= (set (keys data)) (set [:tag :data]))
                (string? (:tag data))
                (= (class (:data data)) byte-array-class)))
@@ -305,6 +325,8 @@
   `(do
      (defmethod ~'create-dataset ~datatype
        [~'parent ~'name ~'data]
+       (assert (group? ~'parent))
+       (assert (string? ~'name))
        (let [~'acc       (:accessor ~'parent)
              ~'path      (:path ~'parent)
              ~'full-path (path-concat ~'path ~'name)]
@@ -320,6 +342,8 @@
          (new ~'hdf-node ~'acc ~'full-path)))
      (defmethod ~'create-dataset ~array-type
        [~'parent ~'name ~'data]
+       (assert (group? ~'parent))
+       (assert (string? ~'name))
        (let [~'acc       (:accessor ~'parent)
              ~'path      (:path ~'parent)
              ~'full-path (path-concat ~'path ~'name)]
