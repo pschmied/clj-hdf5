@@ -130,6 +130,10 @@
   (assert (node? node))
   (:path node))
 
+(defn name
+  [node]
+  (last (clojure.string/split (path node) #"/")))
+
 (defn parent
   [node]
   (assert (node? node))
@@ -147,6 +151,10 @@
   [node]
   (assert (node? node))
   (new hdf-node (:accessor node) "/"))
+
+(defn level
+  [node]
+  (max 0 (dec (count (clojure.string/split (path node) #"/")))))
 
 (defn attributes
   [node]
@@ -265,6 +273,19 @@
   (assert (group? parent))
   (. (:accessor parent) createGroup (path-concat (:path parent) name))
   (lookup parent name))
+
+; Walk over nodes
+
+(defn walk
+  ([node f]
+   (walk node f (constantly true)))
+  ([node f descend?]
+   (lazy-seq
+     (cons (f node)
+           (when (and (group? node)
+                      (descend? node))
+             (apply concat (for [n (vals (members node))]
+                             (walk n f descend?))))))))
 
 ; Datasets
 
