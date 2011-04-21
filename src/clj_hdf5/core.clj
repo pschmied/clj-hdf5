@@ -1,5 +1,5 @@
 (ns clj-hdf5.core
-  (:refer-clojure :exclude [read])
+  (:refer-clojure :exclude [read name])
   (:require clojure.string)
   (:import java.io.File))
 
@@ -268,6 +268,15 @@
       (new hdf-node acc full-path)
       nil)))
 
+(defn get-dataset
+  [root abs-path]
+  (assert (root? root))
+  (assert (absolute-path? abs-path))
+  (let [acc (:accessor root)]
+    (if (. acc exists abs-path)
+      (new hdf-node acc abs-path)
+      nil)))
+
 (defn create-group
   [parent name]
   (assert (group? parent))
@@ -315,7 +324,10 @@
   (assert (group? parent))
   (assert (string? name))
   (.copy (:accessor data) (:path data)
-         (:accessor parent) (if (root? parent) "/" (str (:path parent) "/")))
+         (:accessor parent)
+         (if (root? parent)
+           (str "/" name)
+           (str (:path parent) "/" name)))
   (new hdf-node (:accessor parent) (path-concat (:path parent) name)))
 
 (defmulti ^{:private true} create-array-dataset
