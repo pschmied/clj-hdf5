@@ -174,6 +174,12 @@
       (new hdf-attribute acc path name)
       nil)))
 
+(defn read-attribute
+  [node name]
+  (if-let [attr (get-attribute node name)]
+    (read attr)
+    nil))
+
 (defn- read-scalar-attribute
   [acc path name dclass]
   (cond
