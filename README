@@ -1,0 +1,22 @@
+This library provides a high-level Clojure interface to the HDF5
+library for storing scientific data. It is built on top of the JHDF5
+library, which provides a high-level Java interface. While JHDF5 can
+be used directly from Clojure, this additional layer adds a lot of
+convenience:
+
+- Uses Clojure vectors rather than Java arrays for array I/O.
+- Multimethods reduce the huge Java API to just a few functions.
+
+This library is work in progress. Only scalar and 1D array data
+are supported at the moment, both for datasets and attributes.
+
+Links:
+======
+
+HDF5
+----
+http://www.hdfgroup.org/
+
+JHDF5
+-----
+https://wiki-bsse.ethz.ch/display/JHDF5/JHDF5+(HDF5+for+Java)
