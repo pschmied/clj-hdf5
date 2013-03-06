@@ -15,7 +15,10 @@ Building:
 =========
 This build depends on a local jar for JHDF5. Build is managed by Leiningen, and the local jar dependency is resolved by creating a local maven repository more or less like:
 
-    mvn deploy:deploy-file -DgroupId=cisd -DartifactId=jhdf5 -Dversion=12.02.3 -Dpackaging=jar -Dfile=/path/to/cisd-jhdf5-batteries_included_lin_win_mac_sol.jar -Durl=file:repo
+    mvn deploy:deploy-file -DgroupId=cisd -DartifactId=jhdf5 \
+    -Dversion=12.02.3 -Dpackaging=jar \
+    -Dfile=/path/to/cisd-jhdf5-batteries_included_lin_win_mac_sol.jar \
+    -Durl=file:repo
 
 
 Links:
