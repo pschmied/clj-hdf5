@@ -1,10 +1,11 @@
 (ns clj-hdf5.core
   (:refer-clojure :exclude [read name])
   (:require clojure.string)
-  (:import java.io.File))
+  (:import java.io.File
+           (ch.systemsx.cisd.hdf5 HDF5Factory IHDF5SimpleReader
+                                  IHDF5SimpleWriter)))
 
 ; Record definitions
-
 ; A node is defined by its reader/writerand its path inside that file.
 (defrecord hdf-node
   [accessor path])
@@ -77,13 +78,14 @@
   (isa? (class object) hdf-attribute))
 
 ; Opening and closing files.
-; The return value of open/create is the root group object.
+; 
 
 (defn open
+  "The return value of open/create is the root group object."
   ([file] (open file :read-only))
   ([file mode]
      (assert (isa? (class file) java.io.File))
-     (let [factory (ch.systemsx.cisd.hdf5.HDF5FactoryProvider/get)]
+     (let [factory (HDF5FactoryProvider/get)]
        (new hdf-node
             (case mode
                   :read-only   (. factory openForReading file)
@@ -183,13 +185,13 @@
 (defn- read-scalar-attribute
   [acc path name dclass]
   (cond
-   (= dclass ch.systemsx.cisd.hdf5.HDF5DataClass/STRING)
+   (= dclass HDF5DataClass/STRING)
       (. acc getStringAttribute path name)
-   (= dclass ch.systemsx.cisd.hdf5.HDF5DataClass/INTEGER)
+   (= dclass HDF5DataClass/INTEGER)
       (. acc getLongAttribute path name)
-   (= dclass ch.systemsx.cisd.hdf5.HDF5DataClass/FLOAT)
+   (= dclass HDF5DataClass/FLOAT)
       (. acc getDoubleAttribute path name)
-   (= dclass ch.systemsx.cisd.hdf5.HDF5DataClass/REFERENCE)
+   (= dclass HDF5DataClass/REFERENCE)
       (new hdf-node acc  (. acc getObjectReferenceAttribute path name))
    :else
       nil))
@@ -197,11 +199,11 @@
 (defn- read-array-attribute
   [acc path name dclass]
   (cond
-   (= dclass ch.systemsx.cisd.hdf5.HDF5DataClass/STRING)
+   (= dclass HDF5DataClass/STRING)
       (vec (. acc getStringArrayAttribute path name))
-   (= dclass ch.systemsx.cisd.hdf5.HDF5DataClass/INTEGER)
+   (= dclass HDF5DataClass/INTEGER)
       (vec (. acc getLongArrayAttribute path name))
-   (= dclass ch.systemsx.cisd.hdf5.HDF5DataClass/FLOAT)
+   (= dclass HDF5DataClass/FLOAT)
       (vec (. acc getDoubleArrayAttribute path name))
    :else
       nil))
@@ -407,11 +409,11 @@
 (defn- read-scalar-dataset
   [acc path dtclass]
   (cond
-   (= dtclass ch.systemsx.cisd.hdf5.HDF5DataClass/STRING)
+   (= dtclass HDF5DataClass/STRING)
       (. acc readString path)
-   (= dtclass ch.systemsx.cisd.hdf5.HDF5DataClass/INTEGER)
+   (= dtclass HDF5DataClass/INTEGER)
       (. acc readLong path)
-   (= dtclass ch.systemsx.cisd.hdf5.HDF5DataClass/FLOAT)
+   (= dtclass HDF5DataClass/FLOAT)
       (. acc readDouble path)
    :else
       nil))
@@ -419,13 +421,13 @@
 (defn- read-array-dataset
   [acc path dtclass]
   (cond
-   (= dtclass ch.systemsx.cisd.hdf5.HDF5DataClass/STRING)
+   (= dtclass HDF5DataClass/STRING)
       (vec (. acc readStringArray path))
-   (= dtclass ch.systemsx.cisd.hdf5.HDF5DataClass/INTEGER)
+   (= dtclass HDF5DataClass/INTEGER)
       (vec (. acc readLongArray path))
-   (= dtclass ch.systemsx.cisd.hdf5.HDF5DataClass/FLOAT)
+   (= dtclass HDF5DataClass/FLOAT)
       (vec (. acc readDoubleArray path))
-   (= dtclass ch.systemsx.cisd.hdf5.HDF5DataClass/OPAQUE)
+   (= dtclass HDF5DataClass/OPAQUE)
       {:tag  (. acc tryGetOpaqueTag path)
        :data (. acc readAsByteArray path)}
    :else
